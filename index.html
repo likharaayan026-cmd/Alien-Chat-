@@ -157,7 +157,7 @@
         .icon-btn { 
             background: var(--glass-bg); border: 1px solid var(--glass-border); 
             color: var(--text-main); cursor: pointer; width: 40px; height: 40px; border-radius: var(--radius-sm); 
-            display: flex; align-items: center; justify-content: center; transition: all 0.2s; position: relative; 
+            display: flex; align-items: center; justify-content: justify-content; justify-content: center; transition: all 0.2s; position: relative; 
         }
         .icon-btn:hover { background: rgba(0,0,0,0.05); }
         .icon-btn svg { width: 20px; height: 20px; fill: currentColor; }
@@ -186,12 +186,13 @@
             text-align: center; opacity: 0.8; letter-spacing: 0.3px;
         }
 
-        /* Chat View & Top Layer Dropdown */
+        /* Chat View & Dropdown Fix */
         #chat-header-container { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 800px; margin: 0 auto; position: relative; }
         #chat-header-info { text-align: left; flex-grow:1; }
         #chat-header-emoji { width: 40px; height: 40px; font-size: 20px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 50%; display: flex; justify-content: center; align-items: center; }
         #chat-header-name { font-weight: 600; font-size: 16px; color: var(--text-main); }
 
+        /* HIGHER Z-INDEX FOR DROPDOWN SO IT SITS ON TOP OF MESSAGES */
         .dropdown-menu { 
             display: none; position: absolute; top: 50px; right: 0; 
             background: var(--modal-bg); border: 1px solid var(--glass-border); 
@@ -434,7 +435,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
 
     <script>
         const firebaseConfig = {
@@ -450,40 +450,13 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.database();
-        const messaging = firebase.messaging();
 
         auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
         let currentUser = null, currentChatPartner = null;
         let selectedMessageForDelete = null;
         let hiddenMessagesLocal = JSON.parse(localStorage.getItem('alien_hidden_msgs') || '{}');
-        let isAppForeground = true;
-
-        // Detect if app is currently open or background
-        document.addEventListener('visibilitychange', () => {
-            isAppForeground = (document.visibilityState === 'visible');
-        });
-
-        // Register Service Worker for Background Push Notifications
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('firebase-messaging-sw.js')
-                .then((registration) => {
-                    messaging.useServiceWorker(registration);
-                }).catch(err => console.log('SW registration failed:', err));
-        }
-
-        function requestNotificationPermission() {
-            Notification.requestPermission().then((permission) => {
-                if (permission === 'granted') {
-                    messaging.getToken().then((token) => {
-                        if (currentUser && token) {
-                            db.ref(`users/${currentUser.uid}/fcmToken`).set(token);
-                        }
-                    });
-                }
-            });
-        }
-
+        
         const allViews = document.querySelectorAll('.view');
         const msgTone = document.getElementById('msg-tone');
 
@@ -497,18 +470,6 @@
             toast.querySelector('.icon').textContent = icon;
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 3500);
-        }
-
-        function triggerSystemNotification(title, body) {
-            if (Notification.permission === 'granted') {
-                navigator.serviceWorker.ready.then(registration => {
-                    registration.showNotification(title, {
-                        body: body,
-                        icon: '/favicon.ico',
-                        badge: '/favicon.ico'
-                    });
-                });
-            }
         }
 
         const showView = (viewId, pushHistory = true) => {
@@ -580,8 +541,7 @@
                             if (snapshot.exists()) {
                                 currentUser = { uid: user.uid, ...snapshot.val() };
                                 localStorage.setItem('alien_user_profile', JSON.stringify(currentUser));
-                                requestNotificationPermission();
-
+                                
                                 if (document.getElementById('main-view').style.display !== 'flex' && 
                                     document.getElementById('chat-view').style.display !== 'flex') {
                                     initializeApp();
@@ -775,31 +735,29 @@
             if (window.currentChatListener) db.ref(window.currentChatListener.path).off('value', window.currentChatListener.callback);
             
             const messagesRef = db.ref(`messages/${chatId}`).limitToLast(50);
-            let initialLoad = true;
-
             const chatCallback = messagesRef.on('value', snapshot => {
                 const chatContainer = document.getElementById('chat-messages');
                 chatContainer.innerHTML = ''; 
                 
                 let lastMessageSender = null;
-                let lastMsgText = "";
-
                 snapshot.forEach(child => {
                     const msgKey = child.key;
                     const msg = child.val();
                     
+                    // Skip if deleted for me locally
                     if(hiddenMessagesLocal[msgKey]) return;
 
                     const div = document.createElement('div');
                     div.textContent = msg.text;
                     div.className = 'message-bubble ' + (msg.sender === currentUser.uid ? 'message-sent' : 'message-received');
                     
+                    // 2 Seconds Hold to Delete Trigger
                     let pressTimer = null;
                     const startPress = () => {
                         pressTimer = setTimeout(() => {
                             selectedMessageForDelete = { key: msgKey, chatId: chatId, sender: msg.sender };
                             showModal('delete-msg-modal', true);
-                        }, 2000);
+                        }, 2000); // Exactly 2 seconds
                     };
                     const cancelPress = () => { if(pressTimer) clearTimeout(pressTimer); };
 
@@ -811,23 +769,12 @@
 
                     chatContainer.appendChild(div);
                     lastMessageSender = msg.sender;
-                    lastMsgText = msg.text;
                 });
                 
                 chatContainer.scrollTop = chatContainer.scrollHeight;
-
-                if (!initialLoad && lastMessageSender && lastMessageSender !== currentUser.uid) {
-                    if(!didIBlock && !isAmIBlocked) {
-                        if (!isAppForeground) {
-                            // System Push Notification ONLY when app is CLOSED or BACKGROUND
-                            triggerSystemNotification(`${partnerData.name}`, lastMsgText);
-                        } else {
-                            // Sound tone ONLY when app is OPEN
-                            msgTone.play().catch(() => {});
-                        }
-                    }
+                if(lastMessageSender && lastMessageSender !== currentUser.uid && document.getElementById('chat-view').style.display !== 'flex') {
+                    if(!didIBlock && !isAmIBlocked) msgTone.play().catch(() => {});
                 }
-                initialLoad = false;
             });
 
             window.currentChatListener = { path: `messages/${chatId}`, callback: chatCallback };
