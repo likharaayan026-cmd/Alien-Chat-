@@ -10,7 +10,6 @@
     
     <style>
         :root {
-            /* Default Light Theme Variables */
             --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
             --glass-bg: rgba(0, 0, 0, 0.04);
             --glass-border: rgba(0, 0, 0, 0.1);
@@ -35,7 +34,6 @@
         }
 
         body.dark-theme {
-            /* Dark Theme Variables */
             --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
             --glass-bg: rgba(255, 255, 255, 0.08);
             --glass-border: rgba(255, 255, 255, 0.12);
@@ -90,7 +88,6 @@
             to { opacity: 1; transform: scale(1); }
         }
 
-        /* Splash Screen */
         #splash-screen { 
             display: flex; position: absolute; top:0; left:0; width:100%; height:100%; 
             background: var(--bg-gradient); z-index: 500; 
@@ -102,7 +99,6 @@
 
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
 
-        /* Auth View */
         #auth-view { justify-content: center; padding: 24px; align-items: center; }
         .auth-card { 
             width: 100%; max-width: 380px; padding: 32px 24px;
@@ -144,7 +140,6 @@
         .form-switch-text a { color: var(--accent); text-decoration: none; cursor: pointer; font-weight: 600; }
         .error-message { color: var(--danger); font-size: 12px; text-align: center; min-height: 18px; }
 
-        /* Headers */
         header.main-header, header.chat-header { 
             padding: 16px 20px; border-bottom: 1px solid var(--glass-border); 
             display: flex; justify-content: space-between; align-items: center; 
@@ -157,12 +152,11 @@
         .icon-btn { 
             background: var(--glass-bg); border: 1px solid var(--glass-border); 
             color: var(--text-main); cursor: pointer; width: 40px; height: 40px; border-radius: var(--radius-sm); 
-            display: flex; align-items: center; justify-content: justify-content; justify-content: center; transition: all 0.2s; position: relative; 
+            display: flex; align-items: center; justify-content: center; transition: all 0.2s; position: relative; 
         }
         .icon-btn:hover { background: rgba(0,0,0,0.05); }
         .icon-btn svg { width: 20px; height: 20px; fill: currentColor; }
 
-        /* Main Content */
         main { width: 100%; flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; align-items: center; position: relative; }
         #contact-list { width: 100%; max-width: 600px; flex-grow: 1; }
         
@@ -186,13 +180,11 @@
             text-align: center; opacity: 0.8; letter-spacing: 0.3px;
         }
 
-        /* Chat View & Dropdown Fix */
         #chat-header-container { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 800px; margin: 0 auto; position: relative; }
         #chat-header-info { text-align: left; flex-grow:1; }
         #chat-header-emoji { width: 40px; height: 40px; font-size: 20px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 50%; display: flex; justify-content: center; align-items: center; }
         #chat-header-name { font-weight: 600; font-size: 16px; color: var(--text-main); }
 
-        /* HIGHER Z-INDEX FOR DROPDOWN SO IT SITS ON TOP OF MESSAGES */
         .dropdown-menu { 
             display: none; position: absolute; top: 50px; right: 0; 
             background: var(--modal-bg); border: 1px solid var(--glass-border); 
@@ -211,17 +203,53 @@
             word-wrap: break-word; line-height: 1.4; font-size: 14px; 
             user-select: none; -webkit-user-select: none;
             position: relative; transition: transform 0.1s;
+            display: flex; flex-direction: column; gap: 8px;
         }
         .message-bubble:active { transform: scale(0.97); }
         
         .message-sent { background: var(--bubble-sent); color: var(--bubble-sent-text); align-self: flex-end; border-bottom-right-radius: 4px; }
         .message-received { background: var(--bubble-received); color: var(--bubble-received-text); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid var(--glass-border); }
         
+        /* Media Elements inside Message Bubbles */
+        .chat-images-grid { display: grid; gap: 6px; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); margin-bottom: 4px; }
+        .chat-img-thumb { width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: opacity 0.2s; }
+        .chat-img-thumb:hover { opacity: 0.9; }
+
         .blocked-banner { width: 100%; text-align: center; padding: 12px; background: var(--danger-bg); color: var(--danger); font-size: 13px; font-weight: 500; border-top: 1px solid var(--glass-border); }
 
-        #chat-footer-wrapper { width: 100%; background: var(--header-bg); border-top: 1px solid var(--glass-border); display: flex; justify-content: center; z-index: 10; }
-        #chat-input-container { width: 100%; max-width: 800px; padding: 14px 20px; display: flex; gap: 10px; align-items: center; }
+        #chat-footer-wrapper { width: 100%; background: var(--header-bg); border-top: 1px solid var(--glass-border); display: flex; flex-direction: column; align-items: center; z-index: 10; }
+        #image-preview-bar { width: 100%; max-width: 800px; padding: 8px 20px 0 20px; display: none; gap: 10px; }
+        .preview-box { position: relative; width: 50px; height: 50px; border-radius: 8px; overflow: hidden; border: 1px solid var(--glass-border); }
+        .preview-box img { width: 100%; height: 100%; object-fit: cover; }
+        .preview-remove { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.6); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+        #chat-input-container { width: 100%; max-width: 800px; padding: 14px 20px; display: flex; gap: 8px; align-items: center; }
         #chat-input { flex-grow: 1; }
+
+        /* Fullscreen Image Overlay */
+        #fullscreen-image-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95); z-index: 99999;
+            flex-direction: column; justify-content: space-between; align-items: center;
+            padding: 20px;
+        }
+        .fullscreen-header {
+            width: 100%; max-width: 800px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .fullscreen-img-container {
+            flex-grow: 1; display: flex; justify-content: center; align-items: center; width: 100%; max-height: 80vh;
+        }
+        .fullscreen-img-container img {
+            max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px;
+        }
+        .fullscreen-actions {
+            width: 100%; max-width: 800px; display: flex; justify-content: center; gap: 15px; margin-top: 10px;
+        }
+        .download-btn {
+            background: var(--primary); color: #fff; border: none; padding: 12px 24px;
+            border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; display: flex;
+            align-items: center; gap: 8px; text-decoration: none; font-size: 14px;
+        }
 
         /* Modals */
         .modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(6px); justify-content: center; align-items: center; z-index: 2000; }
@@ -244,7 +272,6 @@
         }
         .theme-switch-label { font-size: 14px; font-weight: 600; color: var(--text-main); }
 
-        /* Toast Notifications */
         #toast-notification {
             position: absolute; top: 20px; left: 50%; transform: translateX(-50%) translateY(-60px);
             background: var(--modal-bg); color: var(--text-main); border: 1px solid var(--glass-border);
@@ -347,12 +374,38 @@
             </div>
 
             <div id="chat-footer-wrapper">
+                <div id="image-preview-bar"></div>
+
                 <div id="chat-input-container">
+                    <!-- Image Input (Limit 2 PNG/JPG) -->
+                    <input type="file" id="image-file-input" accept="image/png, image/jpeg, image/jpg" multiple style="display:none;">
+                    <button id="attach-img-btn" class="icon-btn" title="Send Photo (Max 2 JPG/PNG)">
+                        <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                    </button>
+
                     <input type="text" id="chat-input" class="modern-input" placeholder="Transmit message...">
                     <button id="chat-send-btn" class="btn-primary" style="padding: 12px 18px; border-radius: var(--radius-sm);">
                         <svg viewBox="0 0 24 24" style="width:18px; height:18px; fill:currentColor;"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
                     </button>
                 </div>
+            </div>
+        </div>
+
+        <!-- Fullscreen Image Viewer Modal -->
+        <div id="fullscreen-image-modal">
+            <div class="fullscreen-header">
+                <button id="fullscreen-back-btn" class="icon-btn" style="background: rgba(255,255,255,0.2); color: white;">
+                    <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></svg>
+                </button>
+            </div>
+            <div class="fullscreen-img-container">
+                <img id="fullscreen-img-target" src="" alt="Full Screen Transmitted Image">
+            </div>
+            <div class="fullscreen-actions">
+                <a id="download-img-btn" class="download-btn" download="transmitted_image.jpg">
+                    <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: currentColor;"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                    Download Image
+                </a>
             </div>
         </div>
 
@@ -456,7 +509,8 @@
         let currentUser = null, currentChatPartner = null;
         let selectedMessageForDelete = null;
         let hiddenMessagesLocal = JSON.parse(localStorage.getItem('alien_hidden_msgs') || '{}');
-        
+        let selectedImagesBase64 = []; // Holds selected image strings
+
         const allViews = document.querySelectorAll('.view');
         const msgTone = document.getElementById('msg-tone');
 
@@ -483,8 +537,13 @@
             }
         };
 
-        // Smart Hardware / Browser Back Button Control
         window.addEventListener('popstate', (e) => {
+            const fullModal = document.getElementById('fullscreen-image-modal');
+            if (fullModal.style.display === 'flex') {
+                closeFullscreenImage();
+                return;
+            }
+
             const currentChatVisible = document.getElementById('chat-view').style.display === 'flex';
             if (currentChatVisible) {
                 showView('main-view', false);
@@ -497,7 +556,6 @@
         const generateJgId = () => `jg-${Math.floor(1000 + Math.random() * 9000)}`;
         const getChatId = (uid1, uid2) => [uid1, uid2].sort().join('_');
 
-        // Theme Switcher Logic
         const themeToggleBtn = document.getElementById('theme-toggle-btn');
         const savedTheme = localStorage.getItem('alien_theme');
         if (savedTheme === 'dark') {
@@ -511,7 +569,6 @@
             showNotification(isDark ? 'Dark theme enabled' : 'Light theme enabled', '🎨');
         });
 
-        // Numeric Keypad & Strict 4 Digits Lock
         const friendIdInput = document.getElementById('add-friend-id-input');
         friendIdInput.addEventListener('input', (e) => {
             e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 4);
@@ -566,14 +623,12 @@
             }, 2000);
         });
         
-        // Email Login
         document.getElementById('login-form').addEventListener('submit', (e) => { 
             e.preventDefault(); 
             auth.signInWithEmailAndPassword(document.getElementById('login-email').value, document.getElementById('login-password').value)
                 .catch(error => document.getElementById('login-error').textContent = error.message); 
         });
 
-        // Email Signup
         document.getElementById('signup-form').addEventListener('submit', (e) => {
             e.preventDefault();
             auth.createUserWithEmailAndPassword(document.getElementById('signup-email').value, document.getElementById('signup-password').value)
@@ -585,7 +640,6 @@
                 .catch(error => document.getElementById('signup-error').textContent = error.message);
         });
 
-        // Google Sign-In
         document.querySelectorAll('.google-login-trigger').forEach(btn => {
             btn.addEventListener('click', () => {
                 const provider = new firebase.auth.GoogleAuthProvider();
@@ -626,7 +680,6 @@
         });
         document.addEventListener('click', () => { document.getElementById('chat-dropdown').style.display = 'none'; });
 
-        // Add Friend with 4-digit check
         document.getElementById('send-friend-request-btn').addEventListener('click', () => {
             const digitInput = document.getElementById('add-friend-id-input').value.trim(); 
             if (digitInput.length !== 4) return showNotification('Please enter exactly 4 numeric digits.');
@@ -744,20 +797,41 @@
                     const msgKey = child.key;
                     const msg = child.val();
                     
-                    // Skip if deleted for me locally
                     if(hiddenMessagesLocal[msgKey]) return;
 
                     const div = document.createElement('div');
-                    div.textContent = msg.text;
                     div.className = 'message-bubble ' + (msg.sender === currentUser.uid ? 'message-sent' : 'message-received');
                     
-                    // 2 Seconds Hold to Delete Trigger
+                    // Add Images Render with Fullscreen Click Action
+                    if (msg.images && msg.images.length > 0) {
+                        const imgGrid = document.createElement('div');
+                        imgGrid.className = 'chat-images-grid';
+                        msg.images.forEach(imgSrc => {
+                            const imgElem = document.createElement('img');
+                            imgElem.src = imgSrc;
+                            imgElem.className = 'chat-img-thumb';
+                            imgElem.onclick = (e) => {
+                                e.stopPropagation();
+                                openFullscreenImage(imgSrc);
+                            };
+                            imgGrid.appendChild(imgElem);
+                        });
+                        div.appendChild(imgGrid);
+                    }
+
+                    // Add Text Message Render
+                    if (msg.text) {
+                        const textSpan = document.createElement('span');
+                        textSpan.textContent = msg.text;
+                        div.appendChild(textSpan);
+                    }
+                    
                     let pressTimer = null;
                     const startPress = () => {
                         pressTimer = setTimeout(() => {
                             selectedMessageForDelete = { key: msgKey, chatId: chatId, sender: msg.sender };
                             showModal('delete-msg-modal', true);
-                        }, 2000); // Exactly 2 seconds
+                        }, 2000);
                     };
                     const cancelPress = () => { if(pressTimer) clearTimeout(pressTimer); };
 
@@ -780,8 +854,30 @@
             window.currentChatListener = { path: `messages/${chatId}`, callback: chatCallback };
             showView('chat-view');
         }
+
+        /* --- Fullscreen Image Modal Functions --- */
+        function openFullscreenImage(imageSrc) {
+            const modal = document.getElementById('fullscreen-image-modal');
+            const targetImg = document.getElementById('fullscreen-img-target');
+            const downloadBtn = document.getElementById('download-img-btn');
+
+            targetImg.src = imageSrc;
+            downloadBtn.href = imageSrc;
+            modal.style.display = 'flex';
+
+            history.pushState({ modal: 'fullscreen-image' }, '', '');
+        }
+
+        function closeFullscreenImage() {
+            const modal = document.getElementById('fullscreen-image-modal');
+            modal.style.display = 'none';
+        }
+
+        document.getElementById('fullscreen-back-btn').addEventListener('click', () => {
+            closeFullscreenImage();
+            showView('main-view'); // Redirects back to Chat List / Home Screen
+        });
         
-        // Delete Actions
         document.getElementById('btn-delete-for-me').addEventListener('click', () => {
             if(selectedMessageForDelete) {
                 hiddenMessagesLocal[selectedMessageForDelete.key] = true;
@@ -806,15 +902,117 @@
 
         document.getElementById('btn-cancel-delete').addEventListener('click', () => showModal('delete-msg-modal', false));
 
-        document.getElementById('chat-send-btn').addEventListener('click', sendMessage);
-        document.getElementById('chat-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendMessage(); } });
+        /* --- Image Attachment Handling (PNG / JPG Only & Limit 2 Max) --- */
+        const attachImgBtn = document.getElementById('attach-img-btn');
+        const imageFileInput = document.getElementById('image-file-input');
+        const imagePreviewBar = document.getElementById('image-preview-bar');
+
+        attachImgBtn.addEventListener('click', () => {
+            if(selectedImagesBase64.length >= 2) {
+                return showNotification('Maximum limit is 2 images per message.', '⚠️');
+            }
+            imageFileInput.click();
+        });
+
+        imageFileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            
+            if (selectedImagesBase64.length + files.length > 2) {
+                showNotification('You can send max 2 images at a time.', '⚠️');
+                imageFileInput.value = '';
+                return;
+            }
+
+            files.forEach(file => {
+                // Strict Format Check for PNG and JPG/JPEG only
+                const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+                if (!validTypes.includes(file.type.toLowerCase())) {
+                    return showNotification('Only PNG and JPG images are allowed!', '❌');
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    // Compress Image using HTML5 Canvas to store safely in DB
+                    const img = new Image();
+                    img.src = evt.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        const maxDim = 800; // Resize large images for optimized loading
+                        if (width > maxDim || height > maxDim) {
+                            if (width > height) {
+                                height *= maxDim / width;
+                                width = maxDim;
+                            } else {
+                                width *= maxDim / height;
+                                height = maxDim;
+                            }
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        const base64Url = canvas.toDataURL(file.type, 0.7);
+                        selectedImagesBase64.push(base64Url);
+                        renderImagePreviews();
+                    };
+                };
+                reader.readAsDataURL(file);
+            });
+            imageFileInput.value = '';
+        });
+
+        function renderImagePreviews() {
+            imagePreviewBar.innerHTML = '';
+            if (selectedImagesBase64.length > 0) {
+                imagePreviewBar.style.display = 'flex';
+                selectedImagesBase64.forEach((src, idx) => {
+                    const box = document.createElement('div');
+                    box.className = 'preview-box';
+                    box.innerHTML = `<img src="${src}"><div class="preview-remove" onclick="removeSelectedImage(${idx})">✕</div>`;
+                    imagePreviewBar.appendChild(box);
+                });
+            } else {
+                imagePreviewBar.style.display = 'none';
+            }
+        }
+
+        window.removeSelectedImage = (index) => {
+            selectedImagesBase64.splice(index, 1);
+            renderImagePreviews();
+        };
+
+        /* --- Send Message Payload (Handles Text & Photos) --- */
+        document.getElementById('chat-send-btn').addEventListener('click', () => sendMessage());
+        document.getElementById('chat-input').addEventListener('keypress', (e) => { 
+            if (e.key === 'Enter') { e.preventDefault(); sendMessage(); } 
+        });
         
         function sendMessage() {
             const input = document.getElementById('chat-input'); 
-            const text = input.value.trim(); 
-            if (!text || !currentChatPartner) return;
+            const text = input.value.trim();
+            const hasImages = selectedImagesBase64.length > 0;
             
+            if (!text && !hasImages) return;
+            
+            const payload = {};
+            if (text) payload.text = text;
+            if (hasImages) {
+                payload.images = [...selectedImagesBase64];
+                selectedImagesBase64 = [];
+                renderImagePreviews();
+            }
+            
+            sendPayload(payload);
+            input.value = '';
+        }
+
+        function sendPayload(dataObj) {
+            if (!currentChatPartner) return;
             const targetUid = currentChatPartner.uid;
+            
             db.ref(`users/${targetUid}`).once('value', snap => {
                 const pData = snap.val();
                 const isAmIBlocked = pData.blocked && pData.blocked[currentUser.uid];
@@ -826,8 +1024,13 @@
                 }
                 
                 const chatId = getChatId(currentUser.uid, targetUid);
-                db.ref(`messages/${chatId}`).push({ text: text, sender: currentUser.uid, timestamp: firebase.database.ServerValue.TIMESTAMP });
-                input.value = '';
+                const messageRecord = {
+                    ...dataObj,
+                    sender: currentUser.uid,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                };
+
+                db.ref(`messages/${chatId}`).push(messageRecord);
             });
         }
 
