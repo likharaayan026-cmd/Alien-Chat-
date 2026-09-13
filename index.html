@@ -490,9 +490,10 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
-        const firebaseConfig = {
+        // Firebase Auth helper is proxied through the Vercel app domain for same-origin Google redirect sign-in.
+    const firebaseConfig = {
           apiKey: "AIzaSyBt3iYcR4SijEJqtrBlH8mNr292vakgJFQ",
-          authDomain: "figo-movies.firebaseapp.com",
+          authDomain: "alien-chat-mn66.vercel.app",
           databaseURL: "https://figo-movies-default-rtdb.firebaseio.com",
           projectId: "figo-movies",
           storageBucket: "figo-movies.firebasestorage.app",
