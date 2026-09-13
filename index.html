@@ -490,10 +490,10 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
-        // Firebase Auth helper is proxied through the Vercel app domain for same-origin Google redirect sign-in.
-    const firebaseConfig = {
+        // Firebase configuration
+        const firebaseConfig = {
           apiKey: "AIzaSyBt3iYcR4SijEJqtrBlH8mNr292vakgJFQ",
-          authDomain: "alien-chat-mn66.vercel.app",
+          authDomain: "figo-movies.firebaseapp.com",
           databaseURL: "https://figo-movies-default-rtdb.firebaseio.com",
           projectId: "figo-movies",
           storageBucket: "figo-movies.firebasestorage.app",
@@ -648,9 +648,8 @@
         });
 
         // Google Sign-In
-        // Primary flow: popup (works directly from a Vercel-hosted page).
-        // Fallback: redirect when the browser blocks popups or the popup flow
-        // is unavailable. The redirect result is handled on the next page load.
+        // Use Firebase Web SDK popup only. No redirect fallback is used because
+        // the Android app is running this HTML inside AppCreator24/WebView.
         let googleSignInInProgress = false;
 
         function getFirebaseAuthErrorMessage(error) {
@@ -659,23 +658,22 @@
                 'auth/unauthorized-domain':
                     'This website is not authorized in Firebase. Add alien-chat-mn66.vercel.app in Firebase → Authentication → Settings → Authorized domains.',
                 'auth/popup-blocked':
-                    'Google popup was blocked. Allow popups for this site and try again.',
+                    'Google sign-in popup was blocked by the app/browser. Please allow popups or open the app page in Chrome.',
                 'auth/popup-closed-by-user':
                     'Google sign-in was closed before it finished.',
                 'auth/cancelled-popup-request':
-                    'Another Google sign-in is already running. Please wait a moment and try again.',
+                    'Another Google sign-in is already running. Please wait and try again.',
                 'auth/operation-not-allowed':
-                    'Google Sign-In is not enabled in this Firebase project.',
+                    'Google Sign-In is not enabled in Firebase Authentication.',
                 'auth/operation-not-supported-in-this-environment':
-                    'Google Sign-In popup is not supported here. Switching to redirect sign-in.',
+                    'Google Sign-In popup is not supported in this app environment.',
                 'auth/network-request-failed':
                     'Network error. Check your internet connection and try again.',
                 'auth/account-exists-with-different-credential':
-                    'An account already exists with this email using another sign-in method.',
+                    'This Google email already has an account using another sign-in method.',
                 'auth/internal-error':
                     'Firebase returned an internal error. Please try again.'
             };
-
             return messages[code] || `Google sign-in failed (${code}). ${error && error.message ? error.message : 'Please try again.'}`;
         }
 
@@ -695,30 +693,38 @@
                 provider.setCustomParameters({ prompt: 'select_account' });
 
                 showNotification('Opening Google sign-in…', '🔐');
+
+                // IMPORTANT: popup only. Do not call signInWithRedirect() here.
+                // Firebase completes the Google credential exchange and the
+                // existing onAuthStateChanged() handler continues the app flow.
                 const result = await auth.signInWithPopup(provider);
 
                 if (result && result.user) {
+                    const user = result.user;
+
+                    // Create a basic Firebase user record if this is the first
+                    // Google login. The existing profile setup screen will then
+                    // collect the remaining profile information.
+                    const userRef = db.ref(`users/${user.uid}`);
+                    const snapshot = await userRef.once('value');
+
+                    if (!snapshot.exists()) {
+                        currentUser = {
+                            uid: user.uid,
+                            email: user.email || '',
+                            name: user.displayName || '',
+                            photoURL: user.photoURL || '',
+                            provider: 'google'
+                        };
+                        document.getElementById('profile-emoji-input').value = getRandomEmoji();
+                        showModal('profile-setup-modal');
+                    }
+
                     showNotification('Google sign-in successful!', '✅');
                 }
             } catch (error) {
                 console.error('Google Sign-In error:', error);
-
-                // Popup blocked / unsupported → use Firebase redirect flow.
-                if (error.code === 'auth/popup-blocked' ||
-                    error.code === 'auth/operation-not-supported-in-this-environment') {
-                    try {
-                        const provider = new firebase.auth.GoogleAuthProvider();
-                        provider.setCustomParameters({ prompt: 'select_account' });
-                        showNotification('Opening Google sign-in…', '🔐');
-                        await auth.signInWithRedirect(provider);
-                        return;
-                    } catch (redirectError) {
-                        console.error('Google redirect error:', redirectError);
-                        showNotification(getFirebaseAuthErrorMessage(redirectError), '❌');
-                    }
-                } else if (error.code !== 'auth/popup-closed-by-user') {
-                    showNotification(getFirebaseAuthErrorMessage(error), '❌');
-                }
+                showNotification(getFirebaseAuthErrorMessage(error), '❌');
             } finally {
                 googleSignInInProgress = false;
                 buttons.forEach(btn => {
@@ -732,20 +738,6 @@
         document.querySelectorAll('.google-login-trigger').forEach(btn => {
             btn.addEventListener('click', startGoogleSignIn);
         });
-
-        // Complete a Google sign-in that used the redirect fallback.
-        auth.getRedirectResult()
-            .then(result => {
-                if (result && result.user) {
-                    showNotification('Google sign-in successful!', '✅');
-                }
-            })
-            .catch(error => {
-                console.error('Google redirect result error:', error);
-                if (error.code !== 'auth/popup-closed-by-user') {
-                    showNotification(getFirebaseAuthErrorMessage(error), '❌');
-                }
-            });
 
         document.getElementById('logout-btn').addEventListener('click', () => { 
             auth.signOut(); 
